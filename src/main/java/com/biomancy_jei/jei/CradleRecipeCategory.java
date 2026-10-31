@@ -26,7 +26,6 @@ import java.util.List;
 public final class CradleRecipeCategory implements IRecipeCategory<CradleRecipe> {
     public static final RecipeType<CradleRecipe> RECIPE_TYPE = RecipeType.create(BiomancyJei.MOD_ID, "primordial_cradle", CradleRecipe.class);
     public static final int WIDTH = 164;
-    public static final int HEIGHT = 180;
     public static final int ACTIVATION_Y = 20;
     public static final int OUTPUT_Y = 42;
     public static final int MOB_X = 4;
@@ -38,6 +37,8 @@ public final class CradleRecipeCategory implements IRecipeCategory<CradleRecipe>
     public static final int TRIBUTE_Y = 83;
     public static final int TRIBUTE_WIDTH = 160;
     public static final int TRIBUTE_HEIGHT = 97;
+    public static final int MIN_TRIBUTE_HEIGHT = 36;
+    public static final int ACTIVATION_MAX_LINES = 2;
     public static final int SLOT_SIZE = 18;
     public static final int COLUMNS = 8;
     private final IDrawable icon;
@@ -65,7 +66,11 @@ public final class CradleRecipeCategory implements IRecipeCategory<CradleRecipe>
 
     @Override
     public int getHeight() {
-        return HEIGHT;
+        return TRIBUTE_Y + getTributeHeight(JeiLayoutHelper.maxRecipeHeight());
+    }
+
+    public static int getTributeHeight(int availableHeight) {
+        return JeiLayoutHelper.fitViewport(availableHeight, TRIBUTE_Y, MIN_TRIBUTE_HEIGHT, TRIBUTE_HEIGHT);
     }
 
     @Override
@@ -104,7 +109,8 @@ public final class CradleRecipeCategory implements IRecipeCategory<CradleRecipe>
         int tributeEnd = Math.min(mobEnd + recipe.tributes().size(), slots.size());
         List<IRecipeSlotDrawable> mobSlots = new ArrayList<>(slots.subList(mobStart, mobEnd));
         List<IRecipeSlotDrawable> tributeSlots = new ArrayList<>(slots.subList(mobEnd, tributeEnd));
-        CradleRecipeWidget widget = new CradleRecipeWidget(recipe, MOB_X, MOB_Y, MOB_WIDTH, MOB_HEIGHT, TRIBUTE_X, TRIBUTE_Y, TRIBUTE_WIDTH, TRIBUTE_HEIGHT, mobSlots, tributeSlots);
+        int height = getHeight();
+        CradleRecipeWidget widget = new CradleRecipeWidget(recipe, height, TRIBUTE_X, TRIBUTE_Y, TRIBUTE_WIDTH, height - TRIBUTE_Y, mobSlots, tributeSlots);
         List<IRecipeSlotDrawable> allSlots = new ArrayList<>(mobSlots);
         allSlots.addAll(tributeSlots);
         builder.addSlottedWidget(widget, allSlots);
@@ -113,7 +119,7 @@ public final class CradleRecipeCategory implements IRecipeCategory<CradleRecipe>
 
     @Override
     public void draw(CradleRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
-        // 绘制两段说明文字和投喂物品滚动区域的固定底板。
+        // 绘制两段说明文字，投喂物品底板由滚动控件按实际高度绘制。
         Minecraft minecraft = Minecraft.getInstance();
         Component activation = Component.translatable("jei.biomancy_jei.cradle.activation");
         Component output = Component.translatable("jei.biomancy_jei.cradle.output");
@@ -121,7 +127,6 @@ public final class CradleRecipeCategory implements IRecipeCategory<CradleRecipe>
         drawCenteredWrappedText(guiGraphics, minecraft.font, activation, ACTIVATION_Y, 0x404040);
         guiGraphics.drawString(minecraft.font, output, WIDTH / 2 - minecraft.font.width(output) / 2, OUTPUT_Y, 0x404040, false);
         guiGraphics.drawString(minecraft.font, tributes, WIDTH / 2 - minecraft.font.width(tributes) / 2, TRIBUTES_Y, 0x404040, false);
-        drawPanel(guiGraphics, TRIBUTE_X, TRIBUTE_Y, TRIBUTE_WIDTH, TRIBUTE_HEIGHT);
     }
 
     // 计算生物刷怪蛋居中的一行槽位坐标。
@@ -160,9 +165,10 @@ public final class CradleRecipeCategory implements IRecipeCategory<CradleRecipe>
 
     // 在 JEI 与 EMI 页面宽度内自动换行并居中绘制说明文字。
     public static void drawCenteredWrappedText(GuiGraphics guiGraphics, net.minecraft.client.gui.Font font, Component text, int y, int color) {
-        for (FormattedCharSequence line : font.split(text, WIDTH - 4)) {
-            guiGraphics.drawString(font, line, WIDTH / 2 - font.width(line) / 2, y, color, false);
-            y += 10;
+        List<FormattedCharSequence> lines = font.split(text, WIDTH - 4);
+        for (int index = 0; index < Math.min(lines.size(), ACTIVATION_MAX_LINES); index++) {
+            FormattedCharSequence line = lines.get(index);
+            guiGraphics.drawString(font, line, WIDTH / 2 - font.width(line) / 2, y + index * 10, color, false);
         }
     }
 

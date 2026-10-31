@@ -12,19 +12,29 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.network.chat.Component;
 import org.joml.Matrix4f;
+import mezz.jei.common.Internal;
+import mezz.jei.common.gui.elements.DrawableNineSliceTexture;
+import mezz.jei.common.gui.textures.Textures;
+import mezz.jei.common.util.ImmutableRect2i;
 
 import java.util.ArrayList;
 import java.util.List;
 
 // 在 EMI 原初摇篮页面中绘制刷怪蛋、投喂物品和对应的动态 tooltip。
 public final class EmiCradleScrollWidget extends Widget implements EmiScrollableWidget {
+    private static final int SCROLLBAR_WIDTH = 14;
+    private static final int SCROLLBAR_EXTRA_WIDTH = 16;
+    private static final int MIN_SCROLL_MARKER_HEIGHT = 14;
     private final EmiRecipe recipe;
     private final CradleRecipe cradleRecipe;
     private final int x;
     private final int y;
     private final int width;
     private final int height;
+    private final int tributeHeight;
     private final int contentHeight;
+    private final DrawableNineSliceTexture scrollbarMarker;
+    private final DrawableNineSliceTexture scrollbarBackground;
     private int scrollOffset;
     private boolean draggingScrollbar;
     private int scrollbarGrabOffset;
@@ -37,7 +47,11 @@ public final class EmiCradleScrollWidget extends Widget implements EmiScrollable
         this.y = y;
         this.width = width;
         this.height = height;
-        this.contentHeight = Math.max(CradleRecipeCategory.TRIBUTE_HEIGHT, CradleRecipeCategory.getTributeContentHeight(cradleRecipe.tributes().size()));
+        this.tributeHeight = height - CradleRecipeCategory.TRIBUTE_Y;
+        Textures textures = Internal.getTextures();
+        this.scrollbarMarker = textures.getScrollbarMarker();
+        this.scrollbarBackground = textures.getScrollbarBackground();
+        this.contentHeight = Math.max(tributeHeight, CradleRecipeCategory.getTributeContentHeight(cradleRecipe.tributes().size()));
     }
 
     @Override
@@ -48,7 +62,7 @@ public final class EmiCradleScrollWidget extends Widget implements EmiScrollable
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
         // 绘制标签、面板和固定的生物刷怪蛋。
-        CradleRecipeCategory.drawPanel(guiGraphics, CradleRecipeCategory.TRIBUTE_X, CradleRecipeCategory.TRIBUTE_Y, CradleRecipeCategory.TRIBUTE_WIDTH, CradleRecipeCategory.TRIBUTE_HEIGHT);
+        CradleRecipeCategory.drawPanel(guiGraphics, CradleRecipeCategory.TRIBUTE_X, CradleRecipeCategory.TRIBUTE_Y, CradleRecipeCategory.TRIBUTE_WIDTH, tributeHeight);
         net.minecraft.client.gui.Font font = net.minecraft.client.Minecraft.getInstance().font;
         Component activation = Component.translatable("jei.biomancy_jei.cradle.activation");
         Component output = Component.translatable("jei.biomancy_jei.cradle.output");
@@ -69,12 +83,12 @@ public final class EmiCradleScrollWidget extends Widget implements EmiScrollable
         Matrix4f matrix = guiGraphics.pose().last().pose();
         int screenX = Math.round(matrix.m30());
         int screenY = Math.round(matrix.m31());
-        guiGraphics.enableScissor(screenX + CradleRecipeCategory.TRIBUTE_X + 1, screenY + CradleRecipeCategory.TRIBUTE_Y + 1, screenX + CradleRecipeCategory.TRIBUTE_X + CradleRecipeCategory.TRIBUTE_WIDTH - 14, screenY + CradleRecipeCategory.TRIBUTE_Y + CradleRecipeCategory.TRIBUTE_HEIGHT - 1);
+        guiGraphics.enableScissor(screenX + CradleRecipeCategory.TRIBUTE_X + 1, screenY + CradleRecipeCategory.TRIBUTE_Y + 1, screenX + CradleRecipeCategory.TRIBUTE_X + CradleRecipeCategory.TRIBUTE_WIDTH - SCROLLBAR_EXTRA_WIDTH, screenY + CradleRecipeCategory.TRIBUTE_Y + tributeHeight - 1);
         List<CradleRecipeCategory.SlotPlacement> tributePlacements = CradleRecipeCategory.getTributePlacements(cradleRecipe.tributes().size());
         for (int index = 0; index < cradleRecipe.tributes().size() && index < tributePlacements.size(); index++) {
             int slotX = CradleRecipeCategory.TRIBUTE_X + tributePlacements.get(index).x();
             int slotY = CradleRecipeCategory.TRIBUTE_Y + tributePlacements.get(index).y() - scrollOffset;
-            if (slotY + 18 < CradleRecipeCategory.TRIBUTE_Y || slotY > CradleRecipeCategory.TRIBUTE_Y + CradleRecipeCategory.TRIBUTE_HEIGHT) {
+            if (slotY + 18 < CradleRecipeCategory.TRIBUTE_Y || slotY > CradleRecipeCategory.TRIBUTE_Y + tributeHeight) {
                 continue;
             }
             new SlotWidget(EmiStack.of(cradleRecipe.tributes().get(index).item()), slotX, slotY)
@@ -113,7 +127,7 @@ public final class EmiCradleScrollWidget extends Widget implements EmiScrollable
     @Override
     public boolean mouseClicked(int mouseX, int mouseY, int button) {
         // 左键点击滑轨时开始拖拽，否则把点击交给对应物品槽位。
-        if (button == 0 && contentHeight > CradleRecipeCategory.TRIBUTE_HEIGHT && isOverScrollbar(mouseX, mouseY)) {
+        if (button == 0 && contentHeight > tributeHeight && isOverScrollbar(mouseX, mouseY)) {
             draggingScrollbar = true;
             scrollbarGrabOffset = mouseY >= scrollbarThumbY() && mouseY < scrollbarThumbY() + scrollbarThumbHeight()
                     ? mouseY - scrollbarThumbY()
@@ -139,11 +153,11 @@ public final class EmiCradleScrollWidget extends Widget implements EmiScrollable
     @Override
     public boolean biomancyJei$mouseScrolled(int mouseX, int mouseY, double delta) {
         // 只在投喂物品视口内消费滚轮事件。
-        if (!new Bounds(CradleRecipeCategory.TRIBUTE_X, CradleRecipeCategory.TRIBUTE_Y, CradleRecipeCategory.TRIBUTE_WIDTH - 14, CradleRecipeCategory.TRIBUTE_HEIGHT).contains(mouseX, mouseY)) {
+        if (!new Bounds(CradleRecipeCategory.TRIBUTE_X, CradleRecipeCategory.TRIBUTE_Y, CradleRecipeCategory.TRIBUTE_WIDTH - SCROLLBAR_EXTRA_WIDTH, tributeHeight).contains(mouseX, mouseY)) {
             return false;
         }
-        if (contentHeight > CradleRecipeCategory.TRIBUTE_HEIGHT) {
-            scrollOffset = clamp(scrollOffset - (int) Math.signum(delta) * 18, 0, contentHeight - CradleRecipeCategory.TRIBUTE_HEIGHT);
+        if (contentHeight > tributeHeight) {
+            scrollOffset = clamp(scrollOffset - (int) Math.signum(delta) * 18, 0, contentHeight - tributeHeight);
         }
         return true;
     }
@@ -186,7 +200,7 @@ public final class EmiCradleScrollWidget extends Widget implements EmiScrollable
 
     // 根据滚动偏移取得当前鼠标下的投喂物品索引。
     private int getTributeIndex(int mouseX, int mouseY) {
-        if (mouseX < CradleRecipeCategory.TRIBUTE_X || mouseX >= CradleRecipeCategory.TRIBUTE_X + CradleRecipeCategory.TRIBUTE_WIDTH - 14 || mouseY < CradleRecipeCategory.TRIBUTE_Y || mouseY >= CradleRecipeCategory.TRIBUTE_Y + CradleRecipeCategory.TRIBUTE_HEIGHT) {
+        if (mouseX < CradleRecipeCategory.TRIBUTE_X || mouseX >= CradleRecipeCategory.TRIBUTE_X + CradleRecipeCategory.TRIBUTE_WIDTH - SCROLLBAR_EXTRA_WIDTH || mouseY < CradleRecipeCategory.TRIBUTE_Y || mouseY >= CradleRecipeCategory.TRIBUTE_Y + tributeHeight) {
             return -1;
         }
         int column = (mouseX - CradleRecipeCategory.TRIBUTE_X) / 18;
@@ -219,44 +233,39 @@ public final class EmiCradleScrollWidget extends Widget implements EmiScrollable
         return value > 0 ? "+" + value : Integer.toString(value);
     }
 
-    // 绘制固定滚动条和按内容比例变化的滑块。
+    // 使用 JEI 原生滚动条材质绘制滑轨和滑块。
     private void drawScrollbar(GuiGraphics guiGraphics) {
-        int barX = CradleRecipeCategory.TRIBUTE_X + CradleRecipeCategory.TRIBUTE_WIDTH - 12;
-        guiGraphics.fill(barX, CradleRecipeCategory.TRIBUTE_Y + 4, barX + 8, CradleRecipeCategory.TRIBUTE_Y + CradleRecipeCategory.TRIBUTE_HEIGHT - 4, 0xFFB5B5B5);
-        if (contentHeight <= CradleRecipeCategory.TRIBUTE_HEIGHT) {
-            guiGraphics.fill(barX + 1, CradleRecipeCategory.TRIBUTE_Y + 5, barX + 7, CradleRecipeCategory.TRIBUTE_Y + CradleRecipeCategory.TRIBUTE_HEIGHT - 5, 0xFFE0E0E0);
-            return;
-        }
-        guiGraphics.fill(barX + 1, scrollbarThumbY(), barX + 7, scrollbarThumbY() + scrollbarThumbHeight(), 0xFF8A8A8A);
+        scrollbarBackground.draw(guiGraphics, new ImmutableRect2i(CradleRecipeCategory.TRIBUTE_X + CradleRecipeCategory.TRIBUTE_WIDTH - SCROLLBAR_WIDTH, CradleRecipeCategory.TRIBUTE_Y, SCROLLBAR_WIDTH, tributeHeight));
+        scrollbarMarker.draw(guiGraphics, new ImmutableRect2i(CradleRecipeCategory.TRIBUTE_X + CradleRecipeCategory.TRIBUTE_WIDTH - SCROLLBAR_WIDTH + 1, scrollbarThumbY(), SCROLLBAR_WIDTH - 2, scrollbarThumbHeight()));
     }
 
     // 判断鼠标是否位于滚动条轨道。
     private boolean isOverScrollbar(int mouseX, int mouseY) {
-        int barX = CradleRecipeCategory.TRIBUTE_X + CradleRecipeCategory.TRIBUTE_WIDTH - 12;
-        return mouseX >= barX && mouseX < barX + 8 && mouseY >= CradleRecipeCategory.TRIBUTE_Y + 4 && mouseY < CradleRecipeCategory.TRIBUTE_Y + CradleRecipeCategory.TRIBUTE_HEIGHT - 4;
+        int barX = CradleRecipeCategory.TRIBUTE_X + CradleRecipeCategory.TRIBUTE_WIDTH - SCROLLBAR_WIDTH;
+        return mouseX >= barX && mouseX < barX + SCROLLBAR_WIDTH && mouseY >= CradleRecipeCategory.TRIBUTE_Y && mouseY < CradleRecipeCategory.TRIBUTE_Y + tributeHeight;
     }
 
     // 取得滚动条轨道高度。
     private int scrollbarTrackHeight() {
-        return CradleRecipeCategory.TRIBUTE_HEIGHT - 10;
+        return tributeHeight - 2;
     }
 
     // 按视口与内容比例计算滑块高度。
     private int scrollbarThumbHeight() {
-        return Math.max(16, CradleRecipeCategory.TRIBUTE_HEIGHT * scrollbarTrackHeight() / contentHeight);
+        return Math.min(scrollbarTrackHeight(), Math.max(MIN_SCROLL_MARKER_HEIGHT, tributeHeight * scrollbarTrackHeight() / contentHeight));
     }
 
     // 按当前滚动偏移计算滑块纵坐标。
     private int scrollbarThumbY() {
-        return CradleRecipeCategory.TRIBUTE_Y + 5 + scrollOffset * (scrollbarTrackHeight() - scrollbarThumbHeight()) / Math.max(1, contentHeight - CradleRecipeCategory.TRIBUTE_HEIGHT);
+        return CradleRecipeCategory.TRIBUTE_Y + 1 + scrollOffset * (scrollbarTrackHeight() - scrollbarThumbHeight()) / Math.max(1, contentHeight - tributeHeight);
     }
 
     // 将拖拽位置换算成内容滚动偏移。
     private void updateScrollFromMouse(int mouseY) {
-        int trackY = CradleRecipeCategory.TRIBUTE_Y + 5;
+        int trackY = CradleRecipeCategory.TRIBUTE_Y + 1;
         int availableTrack = Math.max(1, scrollbarTrackHeight() - scrollbarThumbHeight());
         int thumbTop = clamp(mouseY - scrollbarGrabOffset, trackY, trackY + availableTrack);
-        scrollOffset = clamp((thumbTop - trackY) * (contentHeight - CradleRecipeCategory.TRIBUTE_HEIGHT) / availableTrack, 0, contentHeight - CradleRecipeCategory.TRIBUTE_HEIGHT);
+        scrollOffset = clamp((thumbTop - trackY) * (contentHeight - tributeHeight) / availableTrack, 0, Math.max(0, contentHeight - tributeHeight));
     }
 
     // 将整数值限制在闭区间内。

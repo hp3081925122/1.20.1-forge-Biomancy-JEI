@@ -2,6 +2,7 @@ package com.biomancy_jei.emi;
 
 import com.biomancy_jei.jei.BiomancyJeiPlugin;
 import com.biomancy_jei.jei.DespoilRecipe;
+import com.biomancy_jei.jei.DespoilRecipeCategory;
 import dev.emi.emi.api.recipe.EmiRecipe;
 import dev.emi.emi.api.recipe.EmiRecipeCategory;
 import dev.emi.emi.api.stack.EmiIngredient;
@@ -16,11 +17,9 @@ import java.util.List;
 // 将同一份血肉镰刀掉落数据转换为原生 EMI 信息页面。
 public final class EmiDespoilRecipe implements EmiRecipe {
     private static final int WIDTH = 164;
-    private static final int HEIGHT = 136;
     private static final int CONTENT_X = 4;
     private static final int CONTENT_Y = 35;
     private static final int CONTENT_WIDTH = 160;
-    private static final int CONTENT_HEIGHT = 101;
     private final DespoilRecipe recipe;
     private final List<EmiIngredient> inputs;
     private final List<EmiStack> outputs;
@@ -72,7 +71,7 @@ public final class EmiDespoilRecipe implements EmiRecipe {
 
     @Override
     public int getDisplayHeight() {
-        return HEIGHT;
+        return CONTENT_Y + DespoilRecipeCategory.getContentHeight(EmiLayoutHelper.maxRecipeHeight());
     }
 
     @Override
@@ -82,6 +81,6 @@ public final class EmiDespoilRecipe implements EmiRecipe {
         widgets.addSlot(EmiStack.of(BiomancyJeiPlugin.getDespoilBook()), 42, 14).drawBack(true).recipeContext(this);
         widgets.addText(Component.translatable("jei.biomancy_jei.despoil.or"), 28, 20, 0xFF404040, false);
         widgets.addSlot(EmiStack.of(recipe.drop()), 122, 14).drawBack(true).recipeContext(this);
-        widgets.add(new EmiDespoilScrollWidget(this, recipe, CONTENT_X, CONTENT_Y, CONTENT_WIDTH, CONTENT_HEIGHT));
+        widgets.add(new EmiDespoilScrollWidget(this, recipe, CONTENT_X, CONTENT_Y, CONTENT_WIDTH, widgets.getHeight() - CONTENT_Y));
     }
 }

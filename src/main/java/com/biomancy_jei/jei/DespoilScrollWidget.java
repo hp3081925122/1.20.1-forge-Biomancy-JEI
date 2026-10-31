@@ -64,6 +64,7 @@ public final class DespoilScrollWidget implements ISlottedRecipeWidget, IJeiInpu
     @Override
     public void drawWidget(GuiGraphics guiGraphics, double mouseX, double mouseY) {
         // 先绘制滚动条，再在裁剪区域内按滚动偏移绘制槽位。
+        DespoilRecipeCategory.drawPanel(guiGraphics, 0, 0, area.width(), area.height());
         scrollbarBackground.draw(guiGraphics, scrollbarArea);
         scrollbarMarker.draw(guiGraphics, getScrollbarMarkerArea());
         PoseStack poseStack = guiGraphics.pose();

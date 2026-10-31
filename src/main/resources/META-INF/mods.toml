@@ -37,17 +37,3 @@ mandatory = true
 versionRange = "${jei_version_range}"
 ordering = "AFTER"
 side = "CLIENT"
-
-[[dependencies."${mod_id}"]]
-modId = "emi"
-mandatory = false
-versionRange = "${emi_version_range}"
-ordering = "AFTER"
-side = "CLIENT"
-
-[[dependencies."${mod_id}"]]
-modId = "jade"
-mandatory = false
-versionRange = "${jade_version_range}"
-ordering = "AFTER"
-side = "CLIENT"

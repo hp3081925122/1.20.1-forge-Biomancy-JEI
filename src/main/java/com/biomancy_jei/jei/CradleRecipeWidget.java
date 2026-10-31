@@ -44,13 +44,16 @@ public final class CradleRecipeWidget implements ISlottedRecipeWidget, IJeiInput
     private double dragOriginY = -1.0D;
     private float scrollOffsetY;
 
-    public CradleRecipeWidget(CradleRecipe recipe, int mobX, int mobY, int mobWidth, int mobHeight, int tributeX, int tributeY, int tributeWidth, int tributeHeight, List<IRecipeSlotDrawable> mobSlots, List<IRecipeSlotDrawable> tributeSlots) {
+    private final ImmutableRect2i tributePanelArea;
+
+    public CradleRecipeWidget(CradleRecipe recipe, int height, int tributeX, int tributeY, int tributeWidth, int tributeHeight, List<IRecipeSlotDrawable> mobSlots, List<IRecipeSlotDrawable> tributeSlots) {
         // 保存两个区域的槽位，并让滚动条只控制投喂物品区域。
         this.mobSlots = new ArrayList<>(mobSlots);
         this.tributeSlots = new ArrayList<>(tributeSlots);
         this.mobs = recipe.mobs();
         this.tributes = recipe.tributes();
-        this.area = new ImmutableRect2i(0, 0, CradleRecipeCategory.WIDTH, CradleRecipeCategory.HEIGHT);
+        this.area = new ImmutableRect2i(0, 0, CradleRecipeCategory.WIDTH, height);
+        this.tributePanelArea = new ImmutableRect2i(tributeX, tributeY, tributeWidth, tributeHeight);
         this.tributeContentsArea = new ImmutableRect2i(tributeX, tributeY, tributeWidth - SCROLLBAR_EXTRA_WIDTH, tributeHeight);
         this.scrollbarArea = new ImmutableRect2i(tributeX + tributeWidth - SCROLLBAR_WIDTH, tributeY, SCROLLBAR_WIDTH, tributeHeight);
         Textures textures = Internal.getTextures();
@@ -78,6 +81,7 @@ public final class CradleRecipeWidget implements ISlottedRecipeWidget, IJeiInput
     @Override
     public void drawWidget(GuiGraphics guiGraphics, double mouseX, double mouseY) {
         // 先绘制固定的生物刷怪蛋，再裁剪并绘制投喂物品网格。
+        CradleRecipeCategory.drawPanel(guiGraphics, tributePanelArea.x(), tributePanelArea.y(), tributePanelArea.width(), tributePanelArea.height());
         for (int index = 0; index < mobSlots.size() && index < mobPlacements.size(); index++) {
             IRecipeSlotDrawable slot = mobSlots.get(index);
             CradleRecipeCategory.SlotPlacement placement = mobPlacements.get(index);
@@ -206,7 +210,7 @@ public final class CradleRecipeWidget implements ISlottedRecipeWidget, IJeiInput
         }
     }
 
-        // 将投喂物品的六项数值追加到 JEI 原生物品提示中。
+    // 将投喂物品的六项数值追加到 JEI 原生物品提示中。
     private static void addTributeTooltip(ITooltipBuilder tooltip, CradleRecipe.CradleTribute tribute) {
         tooltip.add(Component.translatable("jei.biomancy_jei.cradle.tribute.modifiers").withStyle(ChatFormatting.GRAY));
         if (tribute.biomass() != 0) tooltip.add(Component.translatable("jei.biomancy_jei.cradle.tribute.biomass", signed(tribute.biomass())).withStyle(ChatFormatting.GRAY));
