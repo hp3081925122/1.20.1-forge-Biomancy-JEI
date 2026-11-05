@@ -6,9 +6,8 @@ import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.Bounds;
 import dev.emi.emi.api.widget.SlotWidget;
 import dev.emi.emi.api.widget.Widget;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
-import org.joml.Matrix4f;
 import mezz.jei.common.Internal;
 import mezz.jei.common.gui.elements.ScalableDrawable;
 import mezz.jei.common.gui.textures.Textures;
@@ -57,13 +56,10 @@ public final class EmiDespoilScrollWidget extends Widget implements EmiScrollabl
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
+    public void extractRenderState(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float delta) {
         // 裁剪生物网格，并使用屏幕坐标裁剪以适配 EMI 的 WidgetGroup 平移。
         drawPanel(guiGraphics);
-        Matrix4f matrix = guiGraphics.pose().last().pose();
-        int screenX = Math.round(matrix.m30());
-        int screenY = Math.round(matrix.m31());
-        guiGraphics.enableScissor(screenX + x + 1, screenY + y + 1, screenX + x + width - SCROLLBAR_EXTRA_WIDTH, screenY + y + height - 1);
+        guiGraphics.enableScissor(x + 1, y + 1, x + width - SCROLLBAR_EXTRA_WIDTH, y + height - 1);
         for (int index = 0; index < despoilRecipe.targets().size(); index++) {
             int slotX = x + index % TARGET_COLUMNS * SLOT_SIZE;
             int slotY = y + index / TARGET_COLUMNS * SLOT_SIZE - scrollOffset;
@@ -73,7 +69,7 @@ public final class EmiDespoilScrollWidget extends Widget implements EmiScrollabl
             new SlotWidget(EmiStack.of(despoilRecipe.targets().get(index)), slotX, slotY)
                     .drawBack(true)
                     .recipeContext(recipe)
-                    .render(guiGraphics, mouseX, mouseY, delta);
+                    .extractRenderState(guiGraphics, mouseX, mouseY, delta);
         }
         guiGraphics.disableScissor();
         drawScrollbar(guiGraphics);
@@ -164,7 +160,7 @@ public final class EmiDespoilScrollWidget extends Widget implements EmiScrollabl
     }
 
     // 绘制与 JEI 页面一致的滚动区域边框。
-    private void drawPanel(GuiGraphics guiGraphics) {
+    private void drawPanel(GuiGraphicsExtractor guiGraphics) {
         guiGraphics.fill(x, y, x + width, y + height, 0xFFE3E3E3);
         guiGraphics.fill(x, y, x + width, y + 1, 0xFFF8F8F8);
         guiGraphics.fill(x, y, x + 1, y + height, 0xFFF8F8F8);
@@ -173,7 +169,7 @@ public final class EmiDespoilScrollWidget extends Widget implements EmiScrollabl
     }
 
     // 使用 JEI 原生滚动条材质绘制滑轨和滑块。
-    private void drawScrollbar(GuiGraphics guiGraphics) {
+    private void drawScrollbar(GuiGraphicsExtractor guiGraphics) {
         scrollbarBackground.draw(guiGraphics, new ImmutableRect2i(x + width - SCROLLBAR_WIDTH, y, SCROLLBAR_WIDTH, height));
         scrollbarMarker.draw(guiGraphics, new ImmutableRect2i(x + width - SCROLLBAR_WIDTH + 1, scrollbarThumbY(), SCROLLBAR_WIDTH - 2, scrollbarThumbHeight()));
     }

@@ -1,7 +1,7 @@
 package com.biomancy_jei.jei;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.blaze3d.vertex.PoseStack;
+import org.joml.Matrix3x2fStack;
 import mezz.jei.api.gui.builder.ITooltipBuilder;
 import mezz.jei.api.gui.ingredient.IRecipeSlotDrawable;
 import mezz.jei.api.gui.inputs.IJeiInputHandler;
@@ -13,7 +13,7 @@ import mezz.jei.common.gui.elements.ScalableDrawable;
 import mezz.jei.common.gui.textures.Textures;
 import mezz.jei.common.util.ImmutableRect2i;
 import mezz.jei.common.util.MathUtil;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.navigation.ScreenPosition;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.util.Mth;
@@ -62,18 +62,18 @@ public final class DespoilScrollWidget implements ISlottedRecipeWidget, IJeiInpu
     }
 
     @Override
-    public void drawWidget(GuiGraphics guiGraphics, double mouseX, double mouseY) {
+    public void drawWidget(GuiGraphicsExtractor guiGraphics, double mouseX, double mouseY) {
         // 先绘制滚动条，再在裁剪区域内按滚动偏移绘制槽位。
         DespoilRecipeCategory.drawPanel(guiGraphics, 0, 0, area.width(), area.height());
         scrollbarBackground.draw(guiGraphics, scrollbarArea);
         scrollbarMarker.draw(guiGraphics, getScrollbarMarkerArea());
-        PoseStack poseStack = guiGraphics.pose();
-        ScreenRectangle scissorArea = MathUtil.transform(contentsArea, poseStack.last().pose());
+        Matrix3x2fStack poseStack = guiGraphics.pose();
+        ScreenRectangle scissorArea = contentsArea.toScreenRectangle();
         guiGraphics.enableScissor(scissorArea.left(), scissorArea.top(), scissorArea.right(), scissorArea.bottom());
-        poseStack.pushPose();
-        poseStack.translate(0.0D, -getScrollPixels(), 0.0D);
+        poseStack.pushMatrix();
+        poseStack.translate(0.0F, -getScrollPixels());
         drawSlots(guiGraphics);
-        poseStack.popPose();
+        poseStack.popMatrix();
         guiGraphics.disableScissor();
     }
 
@@ -156,7 +156,7 @@ public final class DespoilScrollWidget implements ISlottedRecipeWidget, IJeiInpu
     }
 
     // 按计算好的网格位置绘制当前可见刷怪蛋槽位。
-    private void drawSlots(GuiGraphics guiGraphics) {
+    private void drawSlots(GuiGraphicsExtractor guiGraphics) {
         int slotCount = Math.min(contentSlots.size(), slotPlacements.size());
         for (int index = 0; index < slotCount; index++) {
             IRecipeSlotDrawable slot = contentSlots.get(index);

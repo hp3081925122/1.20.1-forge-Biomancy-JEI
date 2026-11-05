@@ -9,7 +9,7 @@ import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.WidgetHolder;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,10 +43,10 @@ public final class EmiDespoilRecipe implements EmiRecipe {
     }
 
     @Override
-    public ResourceLocation getId() {
+    public Identifier getId() {
         // 使用 synthetic id，避免 EMI 将信息页误判为原版配方。
-        ResourceLocation id = recipe.id();
-        return ResourceLocation.fromNamespaceAndPath(id.getNamespace(), "/" + id.getPath());
+        Identifier id = recipe.id();
+        return Identifier.fromNamespaceAndPath(id.getNamespace(), "/" + id.getPath());
     }
 
     @Override

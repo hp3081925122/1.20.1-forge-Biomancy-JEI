@@ -8,10 +8,9 @@ import dev.emi.emi.api.widget.SlotWidget;
 import dev.emi.emi.api.widget.Widget;
 import dev.emi.emi.api.stack.EmiStack;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.network.chat.Component;
-import org.joml.Matrix4f;
 import mezz.jei.common.Internal;
 import mezz.jei.common.gui.elements.ScalableDrawable;
 import mezz.jei.common.gui.textures.Textures;
@@ -60,30 +59,27 @@ public final class EmiCradleScrollWidget extends Widget implements EmiScrollable
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
+    public void extractRenderState(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float delta) {
         // 绘制标签、面板和固定的生物刷怪蛋。
         CradleRecipeCategory.drawPanel(guiGraphics, CradleRecipeCategory.TRIBUTE_X, CradleRecipeCategory.TRIBUTE_Y, CradleRecipeCategory.TRIBUTE_WIDTH, tributeHeight);
         net.minecraft.client.gui.Font font = net.minecraft.client.Minecraft.getInstance().font;
         Component activation = Component.translatable("jei.biomancy_jei.cradle.activation");
         Component output = Component.translatable("jei.biomancy_jei.cradle.output");
         Component tributes = Component.translatable("jei.biomancy_jei.cradle.tributes");
-        CradleRecipeCategory.drawCenteredWrappedText(guiGraphics, font, activation, CradleRecipeCategory.ACTIVATION_Y, 0x404040);
-        guiGraphics.drawString(font, output, width / 2 - font.width(output) / 2, CradleRecipeCategory.OUTPUT_Y, 0x404040, false);
-        guiGraphics.drawString(font, tributes, width / 2 - font.width(tributes) / 2, CradleRecipeCategory.TRIBUTES_Y, 0x404040, false);
+        CradleRecipeCategory.drawCenteredWrappedText(guiGraphics, font, activation, CradleRecipeCategory.ACTIVATION_Y, 0xFF404040);
+        guiGraphics.text(font, output, width / 2 - font.width(output) / 2, CradleRecipeCategory.OUTPUT_Y, 0xFF404040, false);
+        guiGraphics.text(font, tributes, width / 2 - font.width(tributes) / 2, CradleRecipeCategory.TRIBUTES_Y, 0xFF404040, false);
         List<CradleRecipeCategory.SlotPlacement> mobPlacements = CradleRecipeCategory.getMobPlacements(cradleRecipe.mobs().size());
         for (int index = 0; index < cradleRecipe.mobs().size() && index < mobPlacements.size(); index++) {
             CradleRecipeCategory.SlotPlacement placement = mobPlacements.get(index);
             new SlotWidget(EmiStack.of(cradleRecipe.mobs().get(index).egg()), CradleRecipeCategory.MOB_X + placement.x(), CradleRecipeCategory.MOB_Y + placement.y())
                     .drawBack(true)
                     .recipeContext(recipe)
-                    .render(guiGraphics, mouseX, mouseY, delta);
+                    .extractRenderState(guiGraphics, mouseX, mouseY, delta);
         }
 
         // 裁剪投喂物品网格，避免滚动内容越过下方区域。
-        Matrix4f matrix = guiGraphics.pose().last().pose();
-        int screenX = Math.round(matrix.m30());
-        int screenY = Math.round(matrix.m31());
-        guiGraphics.enableScissor(screenX + CradleRecipeCategory.TRIBUTE_X + 1, screenY + CradleRecipeCategory.TRIBUTE_Y + 1, screenX + CradleRecipeCategory.TRIBUTE_X + CradleRecipeCategory.TRIBUTE_WIDTH - SCROLLBAR_EXTRA_WIDTH, screenY + CradleRecipeCategory.TRIBUTE_Y + tributeHeight - 1);
+        guiGraphics.enableScissor(CradleRecipeCategory.TRIBUTE_X + 1, CradleRecipeCategory.TRIBUTE_Y + 1, CradleRecipeCategory.TRIBUTE_X + CradleRecipeCategory.TRIBUTE_WIDTH - SCROLLBAR_EXTRA_WIDTH, CradleRecipeCategory.TRIBUTE_Y + tributeHeight - 1);
         List<CradleRecipeCategory.SlotPlacement> tributePlacements = CradleRecipeCategory.getTributePlacements(cradleRecipe.tributes().size());
         for (int index = 0; index < cradleRecipe.tributes().size() && index < tributePlacements.size(); index++) {
             int slotX = CradleRecipeCategory.TRIBUTE_X + tributePlacements.get(index).x();
@@ -94,7 +90,7 @@ public final class EmiCradleScrollWidget extends Widget implements EmiScrollable
             new SlotWidget(EmiStack.of(cradleRecipe.tributes().get(index).item()), slotX, slotY)
                     .drawBack(true)
                     .recipeContext(recipe)
-                    .render(guiGraphics, mouseX, mouseY, delta);
+                    .extractRenderState(guiGraphics, mouseX, mouseY, delta);
         }
         guiGraphics.disableScissor();
         drawScrollbar(guiGraphics);
@@ -234,7 +230,7 @@ public final class EmiCradleScrollWidget extends Widget implements EmiScrollable
     }
 
     // 使用 JEI 原生滚动条材质绘制滑轨和滑块。
-    private void drawScrollbar(GuiGraphics guiGraphics) {
+    private void drawScrollbar(GuiGraphicsExtractor guiGraphics) {
         scrollbarBackground.draw(guiGraphics, new ImmutableRect2i(CradleRecipeCategory.TRIBUTE_X + CradleRecipeCategory.TRIBUTE_WIDTH - SCROLLBAR_WIDTH, CradleRecipeCategory.TRIBUTE_Y, SCROLLBAR_WIDTH, tributeHeight));
         scrollbarMarker.draw(guiGraphics, new ImmutableRect2i(CradleRecipeCategory.TRIBUTE_X + CradleRecipeCategory.TRIBUTE_WIDTH - SCROLLBAR_WIDTH + 1, scrollbarThumbY(), SCROLLBAR_WIDTH - 2, scrollbarThumbHeight()));
     }

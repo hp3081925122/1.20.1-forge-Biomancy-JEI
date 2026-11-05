@@ -12,6 +12,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
+import net.minecraft.client.input.MouseButtonEvent;
 
 // 将 EMI 配方页面的滚轮与滑块拖拽事件转发给本模组滚动控件。
 @Mixin(value = RecipeScreen.class, remap = false)
@@ -20,7 +21,10 @@ public abstract class RecipeScreenMixin {
     private List<WidgetGroup> currentPage;
 
     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
-    private void biomancyJei$clickRecipeWidgets(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
+    private void biomancyJei$clickRecipeWidgets(MouseButtonEvent event, boolean doubleClick, CallbackInfoReturnable<Boolean> cir) {
+        double mouseX = event.x();
+        double mouseY = event.y();
+        int button = event.button();
         // 将屏幕坐标转换为 WidgetGroup 本地坐标并转发点击。
         if (currentPage == null) {
             return;
@@ -69,7 +73,10 @@ public abstract class RecipeScreenMixin {
     }
 
     @Inject(method = "mouseDragged", at = @At("HEAD"), cancellable = true)
-    private void biomancyJei$dragRecipeWidgets(double mouseX, double mouseY, int button, double dragX, double dragY, CallbackInfoReturnable<Boolean> cir) {
+    private void biomancyJei$dragRecipeWidgets(MouseButtonEvent event, double dragX, double dragY, CallbackInfoReturnable<Boolean> cir) {
+        double mouseX = event.x();
+        double mouseY = event.y();
+        int button = event.button();
         // 拖拽时不限制鼠标必须位于控件范围，确保滑块可连续拖动。
         if (currentPage == null) {
             return;
@@ -90,7 +97,10 @@ public abstract class RecipeScreenMixin {
     }
 
     @Inject(method = "mouseReleased", at = @At("HEAD"), cancellable = true)
-    private void biomancyJei$releaseRecipeWidgets(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
+    private void biomancyJei$releaseRecipeWidgets(MouseButtonEvent event, CallbackInfoReturnable<Boolean> cir) {
+        double mouseX = event.x();
+        double mouseY = event.y();
+        int button = event.button();
         // 左键释放时清理所有正在拖拽的 Biomancy JEI 滑块状态。
         if (currentPage == null) {
             return;

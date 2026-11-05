@@ -5,7 +5,7 @@ import com.github.elenterius.biomancy.api.tribute.Tribute;
 import com.github.elenterius.biomancy.api.tribute.Tributes;
 import com.github.elenterius.biomancy.crafting.recipe.PotionSerumRecipes;
 import com.github.elenterius.biomancy.item.PotionSerumItem;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -22,8 +22,8 @@ import java.util.Comparator;
 import java.util.List;
 
 // 保存原初摇篮的方块物品、可能生成的生物和全部有效投喂物品。
-public record CradleRecipe(ResourceLocation id, ItemStack cradle, List<CradleMob> mobs, List<CradleTribute> tributes) {
-    private static final ResourceLocation CRADLE_ID = ResourceLocation.fromNamespaceAndPath("biomancy", "primordial_cradle");
+public record CradleRecipe(Identifier id, ItemStack cradle, List<CradleMob> mobs, List<CradleTribute> tributes) {
+    private static final Identifier CRADLE_ID = Identifier.fromNamespaceAndPath("biomancy", "primordial_cradle");
     private static final List<CradleMobDefinition> MOB_DEFINITIONS = List.of(
             new CradleMobDefinition("flesh_blob", MobCondition.FLESH),
             new CradleMobDefinition("hungry_flesh_blob", MobCondition.HUNGRY),
@@ -40,15 +40,15 @@ public record CradleRecipe(ResourceLocation id, ItemStack cradle, List<CradleMob
 
     // 从当前 Biomancy 版本的 Tribute API 构建原初摇篮页面数据。
     public static CradleRecipe create() {
-        Item cradleItem = BuiltInRegistries.ITEM.get(CRADLE_ID);
+        Item cradleItem = BuiltInRegistries.ITEM.getValue(CRADLE_ID);
         List<CradleMob> mobs = new ArrayList<>();
         for (CradleMobDefinition definition : MOB_DEFINITIONS) {
-            ResourceLocation entityId = ResourceLocation.fromNamespaceAndPath("biomancy", definition.entityPath());
+            Identifier entityId = Identifier.fromNamespaceAndPath("biomancy", definition.entityPath());
             EntityType<?> entityType = BuiltInRegistries.ENTITY_TYPE.getOptional(entityId).orElse(null);
             if (entityType == null) {
                 continue;
             }
-            SpawnEggItem spawnEgg = SpawnEggItem.byId(entityType);
+            Item spawnEgg = SpawnEggItem.byId(entityType).map(Holder::value).orElse(null);
             if (spawnEgg != null) {
                 mobs.add(new CradleMob(spawnEgg.getDefaultInstance(), definition.condition()));
             }
@@ -58,7 +58,7 @@ public record CradleRecipe(ResourceLocation id, ItemStack cradle, List<CradleMob
         for (Item item : BuiltInRegistries.ITEM) {
             addTribute(tributes, item.getDefaultInstance());
         }
-        for (Holder<Potion> potion : BuiltInRegistries.POTION.holders().toList()) {
+        for (Holder.Reference<Potion> potion : BuiltInRegistries.POTION.listElements().toList()) {
             // 为三种药水容器分别保留效果 NBT，展示其真实的摇篮数值。
             addTribute(tributes, PotionContents.createItemStack(Items.POTION, potion));
             addTribute(tributes, PotionContents.createItemStack(Items.SPLASH_POTION, potion));
@@ -76,7 +76,7 @@ public record CradleRecipe(ResourceLocation id, ItemStack cradle, List<CradleMob
                 .comparing((CradleTribute entry) -> BuiltInRegistries.ITEM.getKey(entry.item().getItem()).toString())
                 .thenComparing(entry -> entry.item().getComponentsPatch().toString()));
 
-        ResourceLocation recipeId = ResourceLocation.fromNamespaceAndPath(BiomancyJei.MOD_ID, "primordial_cradle");
+        Identifier recipeId = Identifier.fromNamespaceAndPath(BiomancyJei.MOD_ID, "primordial_cradle");
         return new CradleRecipe(recipeId, cradleItem == null ? ItemStack.EMPTY : cradleItem.getDefaultInstance(), mobs, tributes);
     }
 

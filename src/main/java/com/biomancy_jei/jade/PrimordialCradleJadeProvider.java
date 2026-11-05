@@ -4,7 +4,7 @@ import com.github.elenterius.biomancy.block.cradle.PrimordialCradleBlockEntity;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import snownee.jade.api.BlockAccessor;
 import snownee.jade.api.IBlockComponentProvider;
@@ -15,10 +15,10 @@ import snownee.jade.api.config.IPluginConfig;
 import java.util.Locale;
 
 public final class PrimordialCradleJadeProvider implements IBlockComponentProvider, IServerDataProvider<BlockAccessor> {
-    private static final ResourceLocation UID = ResourceLocation.fromNamespaceAndPath("biomancy_jei", "primordial_cradle");
+    private static final Identifier UID = Identifier.fromNamespaceAndPath("biomancy_jei", "primordial_cradle");
 
     @Override
-    public ResourceLocation getUid() {
+    public Identifier getUid() {
         return UID;
     }
 
@@ -47,32 +47,32 @@ public final class PrimordialCradleJadeProvider implements IBlockComponentProvid
             return;
         }
         if (!accessor.showDetails()) {
-            tooltip.add(Component.translatable(data.getBoolean("active")
+            tooltip.add(Component.translatable(data.getBooleanOr("active", false)
                     ? "jade.biomancy_jei.active"
                     : "jade.biomancy_jei.inactive"));
             tooltip.add(Component.translatable("jade.biomancy_jei.view_jei_emi"));
             tooltip.add(Component.translatable("jade.biomancy_jei.hold_shift"));
             return;
         }
-        tooltip.add(Component.translatable("jade.biomancy_jei.biomass", formatValue(data.getFloat("biomass"))));
-        tooltip.add(Component.translatable("jade.biomancy_jei.life_energy", formatValue(data.getFloat("life_energy"))));
-        tooltip.add(Component.translatable("jade.biomancy_jei.success", formatPercent(data.getFloat("success"))));
-        tooltip.add(Component.translatable("jade.biomancy_jei.hostile", formatPercent(data.getFloat("hostile"))));
-        tooltip.add(Component.translatable("jade.biomancy_jei.anomaly", formatPercent(data.getFloat("anomaly"))));
-        tooltip.add(Component.translatable("jade.biomancy_jei.disease", formatPercent(data.getFloat("disease"))));
-        tooltip.add(Component.translatable("jade.biomancy_jei.primal_energy", data.getInt("primal_energy")));
+        tooltip.add(Component.translatable("jade.biomancy_jei.biomass", formatValue(data.getFloatOr("biomass", 0.0F))));
+        tooltip.add(Component.translatable("jade.biomancy_jei.life_energy", formatValue(data.getFloatOr("life_energy", 0.0F))));
+        tooltip.add(Component.translatable("jade.biomancy_jei.success", formatPercent(data.getFloatOr("success", 0.0F))));
+        tooltip.add(Component.translatable("jade.biomancy_jei.hostile", formatPercent(data.getFloatOr("hostile", 0.0F))));
+        tooltip.add(Component.translatable("jade.biomancy_jei.anomaly", formatPercent(data.getFloatOr("anomaly", 0.0F))));
+        tooltip.add(Component.translatable("jade.biomancy_jei.disease", formatPercent(data.getFloatOr("disease", 0.0F))));
+        tooltip.add(Component.translatable("jade.biomancy_jei.primal_energy", data.getIntOr("primal_energy", 0)));
         addMobChanceTooltip(tooltip, data);
     }
 
     // 根据 Biomancy 原初摇篮的实际分支判定计算五种肉团的当前出现概率。
     private static void addMobChanceTooltip(ITooltip tooltip, CompoundTag data) {
-        float successChance = clampChance(data.getFloat("success") / 100.0F);
-        float hostileChance = clampChance(data.getFloat("hostile") / 100.0F);
-        float anomalyChance = clampChance(data.getFloat("anomaly") / 100.0F);
+        float successChance = clampChance(data.getFloatOr("success", 0.0F) / 100.0F);
+        float hostileChance = clampChance(data.getFloatOr("hostile", 0.0F) / 100.0F);
+        float anomalyChance = clampChance(data.getFloatOr("anomaly", 0.0F) / 100.0F);
         float fleshChance;
         float hungryChance;
         float legacyChance;
-        if (data.getFloat("hostile") < -420.0F) {
+        if (data.getFloatOr("hostile", 0.0F) < -420.0F) {
             fleshChance = 0.0F;
             hungryChance = 0.0F;
             legacyChance = successChance * (1.0F - anomalyChance);

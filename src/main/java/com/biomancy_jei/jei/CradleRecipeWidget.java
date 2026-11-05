@@ -1,7 +1,7 @@
 package com.biomancy_jei.jei;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.blaze3d.vertex.PoseStack;
+import org.joml.Matrix3x2fStack;
 import mezz.jei.api.gui.builder.ITooltipBuilder;
 import mezz.jei.api.gui.ingredient.IRecipeSlotDrawable;
 import mezz.jei.api.gui.inputs.IJeiInputHandler;
@@ -14,7 +14,7 @@ import mezz.jei.common.gui.textures.Textures;
 import mezz.jei.common.util.ImmutableRect2i;
 import mezz.jei.common.util.MathUtil;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.navigation.ScreenPosition;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.network.chat.Component;
@@ -79,7 +79,7 @@ public final class CradleRecipeWidget implements ISlottedRecipeWidget, IJeiInput
     }
 
     @Override
-    public void drawWidget(GuiGraphics guiGraphics, double mouseX, double mouseY) {
+    public void drawWidget(GuiGraphicsExtractor guiGraphics, double mouseX, double mouseY) {
         // 先绘制固定的生物刷怪蛋，再裁剪并绘制投喂物品网格。
         CradleRecipeCategory.drawPanel(guiGraphics, tributePanelArea.x(), tributePanelArea.y(), tributePanelArea.width(), tributePanelArea.height());
         for (int index = 0; index < mobSlots.size() && index < mobPlacements.size(); index++) {
@@ -90,13 +90,13 @@ public final class CradleRecipeWidget implements ISlottedRecipeWidget, IJeiInput
         }
         scrollbarBackground.draw(guiGraphics, scrollbarArea);
         scrollbarMarker.draw(guiGraphics, getScrollbarMarkerArea());
-        PoseStack poseStack = guiGraphics.pose();
-        ScreenRectangle scissorArea = MathUtil.transform(tributeContentsArea, poseStack.last().pose());
+        Matrix3x2fStack poseStack = guiGraphics.pose();
+        ScreenRectangle scissorArea = tributeContentsArea.toScreenRectangle();
         guiGraphics.enableScissor(scissorArea.left(), scissorArea.top(), scissorArea.right(), scissorArea.bottom());
-        poseStack.pushPose();
-        poseStack.translate(0.0D, -getScrollPixels(), 0.0D);
+        poseStack.pushMatrix();
+        poseStack.translate(0.0F, -getScrollPixels());
         drawTributeSlots(guiGraphics);
-        poseStack.popPose();
+        poseStack.popMatrix();
         guiGraphics.disableScissor();
     }
 
@@ -192,7 +192,7 @@ public final class CradleRecipeWidget implements ISlottedRecipeWidget, IJeiInput
     }
 
     // 绘制投喂物品槽位并使用统一的网格坐标。
-    private void drawTributeSlots(GuiGraphics guiGraphics) {
+    private void drawTributeSlots(GuiGraphicsExtractor guiGraphics) {
         int slotCount = Math.min(tributeSlots.size(), tributePlacements.size());
         for (int index = 0; index < slotCount; index++) {
             IRecipeSlotDrawable slot = tributeSlots.get(index);

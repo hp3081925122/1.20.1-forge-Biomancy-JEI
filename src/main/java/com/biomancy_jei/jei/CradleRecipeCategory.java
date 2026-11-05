@@ -12,9 +12,9 @@ import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
@@ -80,7 +80,7 @@ public final class CradleRecipeCategory implements IRecipeCategory<CradleRecipe>
     }
 
     @Override
-    public @Nullable ResourceLocation getRegistryName(CradleRecipe recipe) {
+    public @Nullable Identifier getRegistryName(CradleRecipe recipe) {
         return recipe.id();
     }
 
@@ -122,15 +122,15 @@ public final class CradleRecipeCategory implements IRecipeCategory<CradleRecipe>
     }
 
     @Override
-    public void draw(CradleRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
+    public void draw(CradleRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphicsExtractor guiGraphics, double mouseX, double mouseY) {
         // 绘制两段说明文字，投喂物品底板由滚动控件按实际高度绘制。
         Minecraft minecraft = Minecraft.getInstance();
         Component activation = Component.translatable("jei.biomancy_jei.cradle.activation");
         Component output = Component.translatable("jei.biomancy_jei.cradle.output");
         Component tributes = Component.translatable("jei.biomancy_jei.cradle.tributes");
-        drawCenteredWrappedText(guiGraphics, minecraft.font, activation, ACTIVATION_Y, 0x404040);
-        guiGraphics.drawString(minecraft.font, output, WIDTH / 2 - minecraft.font.width(output) / 2, OUTPUT_Y, 0x404040, false);
-        guiGraphics.drawString(minecraft.font, tributes, WIDTH / 2 - minecraft.font.width(tributes) / 2, TRIBUTES_Y, 0x404040, false);
+        drawCenteredWrappedText(guiGraphics, minecraft.font, activation, ACTIVATION_Y, 0xFF404040);
+        guiGraphics.text(minecraft.font, output, WIDTH / 2 - minecraft.font.width(output) / 2, OUTPUT_Y, 0xFF404040, false);
+        guiGraphics.text(minecraft.font, tributes, WIDTH / 2 - minecraft.font.width(tributes) / 2, TRIBUTES_Y, 0xFF404040, false);
     }
 
     // 计算生物刷怪蛋居中的一行槽位坐标。
@@ -159,7 +159,7 @@ public final class CradleRecipeCategory implements IRecipeCategory<CradleRecipe>
     }
 
     // 绘制 JEI 风格的内容面板边框。
-    public static void drawPanel(GuiGraphics guiGraphics, int x, int y, int width, int height) {
+    public static void drawPanel(GuiGraphicsExtractor guiGraphics, int x, int y, int width, int height) {
         guiGraphics.fill(x, y, x + width, y + height, 0xFFE3E3E3);
         guiGraphics.fill(x, y, x + width, y + 1, 0xFFF8F8F8);
         guiGraphics.fill(x, y, x + 1, y + height, 0xFFF8F8F8);
@@ -168,11 +168,11 @@ public final class CradleRecipeCategory implements IRecipeCategory<CradleRecipe>
     }
 
     // 在 JEI 与 EMI 页面宽度内自动换行并居中绘制说明文字。
-    public static void drawCenteredWrappedText(GuiGraphics guiGraphics, net.minecraft.client.gui.Font font, Component text, int y, int color) {
+    public static void drawCenteredWrappedText(GuiGraphicsExtractor guiGraphics, net.minecraft.client.gui.Font font, Component text, int y, int color) {
         List<FormattedCharSequence> lines = font.split(text, WIDTH - 4);
         for (int index = 0; index < Math.min(lines.size(), ACTIVATION_MAX_LINES); index++) {
             FormattedCharSequence line = lines.get(index);
-            guiGraphics.drawString(font, line, WIDTH / 2 - font.width(line) / 2, y + index * 10, color, false);
+            guiGraphics.text(font, line, WIDTH / 2 - font.width(line) / 2, y + index * 10, color, false);
         }
     }
 

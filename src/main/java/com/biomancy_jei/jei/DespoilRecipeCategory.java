@@ -12,9 +12,9 @@ import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
@@ -72,7 +72,7 @@ public final class DespoilRecipeCategory implements IRecipeCategory<DespoilRecip
     }
 
     @Override
-    public @Nullable ResourceLocation getRegistryName(DespoilRecipe recipe) {
+    public @Nullable Identifier getRegistryName(DespoilRecipe recipe) {
         return recipe.id();
     }
 
@@ -108,10 +108,10 @@ public final class DespoilRecipeCategory implements IRecipeCategory<DespoilRecip
     }
 
     @Override
-    public void draw(DespoilRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
+    public void draw(DespoilRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphicsExtractor guiGraphics, double mouseX, double mouseY) {
         // 绘制固定头部，刷怪蛋列表底板由滚动控件按实际高度绘制。
         Component or = Component.translatable("jei.biomancy_jei.despoil.or");
-        guiGraphics.drawString(Minecraft.getInstance().font, or, 44 - Minecraft.getInstance().font.width(or) / 2, 20, 0x404040, false);
+        guiGraphics.text(Minecraft.getInstance().font, or, 44 - Minecraft.getInstance().font.width(or) / 2, 20, 0xFF404040, false);
     }
 
     // 计算每个刷怪蛋在滚动内容中的固定网格坐标。
@@ -130,7 +130,7 @@ public final class DespoilRecipeCategory implements IRecipeCategory<DespoilRecip
     }
 
     // 绘制 JEI 样式的滚动区域边框。
-    static void drawPanel(GuiGraphics guiGraphics, int x, int y, int width, int height) {
+    static void drawPanel(GuiGraphicsExtractor guiGraphics, int x, int y, int width, int height) {
         guiGraphics.fill(x, y, x + width, y + height, 0xFFE3E3E3);
         guiGraphics.fill(x, y, x + width, y + 1, 0xFFF8F8F8);
         guiGraphics.fill(x, y, x + 1, y + height, 0xFFF8F8F8);

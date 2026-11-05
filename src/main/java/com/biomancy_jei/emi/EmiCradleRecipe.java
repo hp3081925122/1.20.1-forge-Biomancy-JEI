@@ -8,7 +8,7 @@ import dev.emi.emi.api.recipe.EmiRecipeCategory;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.WidgetHolder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,9 +38,9 @@ public final class EmiCradleRecipe implements EmiRecipe {
     }
 
     @Override
-    public ResourceLocation getId() {
+    public Identifier getId() {
         // 斜杠前缀标记这是不对应原版配方管理器的合成信息页。
-        return ResourceLocation.fromNamespaceAndPath(recipe.id().getNamespace(), "/" + recipe.id().getPath());
+        return Identifier.fromNamespaceAndPath(recipe.id().getNamespace(), "/" + recipe.id().getPath());
     }
 
     @Override
