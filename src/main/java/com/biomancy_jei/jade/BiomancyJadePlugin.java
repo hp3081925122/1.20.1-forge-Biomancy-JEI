@@ -9,17 +9,18 @@ import snownee.jade.api.WailaPlugin;
 
 @WailaPlugin
 public final class BiomancyJadePlugin implements IWailaPlugin {
-    private static final PrimordialCradleJadeProvider CRADLE_PROVIDER = new PrimordialCradleJadeProvider();
+    private static final PrimordialCradleJadeDataProvider CRADLE_DATA_PROVIDER = new PrimordialCradleJadeDataProvider();
 
     @Override
     public void register(IWailaCommonRegistration registration) {
         // 向 Jade 注册原初摇篮服务端数据同步。
-        registration.registerBlockDataProvider(CRADLE_PROVIDER, PrimordialCradleBlockEntity.class);
+        org.slf4j.LoggerFactory.getLogger(BiomancyJadePlugin.class).debug("Registering separate cradle server data provider");
+        registration.registerBlockDataProvider(CRADLE_DATA_PROVIDER, PrimordialCradleBlockEntity.class);
     }
 
     @Override
     public void registerClient(IWailaClientRegistration registration) {
         // 向 Jade 注册原初摇篮客户端提示组件。
-        registration.registerBlockComponent(CRADLE_PROVIDER, PrimordialCradleBlock.class);
+        registration.registerBlockComponent(new PrimordialCradleJadeProvider(), PrimordialCradleBlock.class);
     }
 }
