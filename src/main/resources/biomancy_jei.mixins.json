@@ -2,14 +2,9 @@
   "required": true,
   "minVersion": "0.8",
   "package": "com.biomancy_jei.mixin",
-  "compatibilityLevel": "JAVA_17",
-  "plugin": "com.biomancy_jei.mixin.BiomancyJeiMixinPlugin",
-  "refmap": "biomancy_jei.refmap.json",
-  "mixins": [
-  ],
-  "client": [
-    "emi.RecipeScreenMixin"
-  ],
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [],
+  "client": [],
   "injectors": {
     "defaultRequire": 1
   },

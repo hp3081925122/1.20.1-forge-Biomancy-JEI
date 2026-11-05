@@ -13,7 +13,7 @@ import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent
 import net.minecraft.network.chat.Component;
 import org.joml.Matrix4f;
 import mezz.jei.common.Internal;
-import mezz.jei.common.gui.elements.DrawableNineSliceTexture;
+import mezz.jei.common.gui.elements.ScalableDrawable;
 import mezz.jei.common.gui.textures.Textures;
 import mezz.jei.common.util.ImmutableRect2i;
 
@@ -33,8 +33,8 @@ public final class EmiCradleScrollWidget extends Widget implements EmiScrollable
     private final int height;
     private final int tributeHeight;
     private final int contentHeight;
-    private final DrawableNineSliceTexture scrollbarMarker;
-    private final DrawableNineSliceTexture scrollbarBackground;
+    private final ScalableDrawable scrollbarMarker;
+    private final ScalableDrawable scrollbarBackground;
     private int scrollOffset;
     private boolean draggingScrollbar;
     private int scrollbarGrabOffset;

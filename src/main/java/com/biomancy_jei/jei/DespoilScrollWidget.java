@@ -9,7 +9,7 @@ import mezz.jei.api.gui.inputs.IJeiUserInput;
 import mezz.jei.api.gui.inputs.RecipeSlotUnderMouse;
 import mezz.jei.api.gui.widgets.ISlottedRecipeWidget;
 import mezz.jei.common.Internal;
-import mezz.jei.common.gui.elements.DrawableNineSliceTexture;
+import mezz.jei.common.gui.elements.ScalableDrawable;
 import mezz.jei.common.gui.textures.Textures;
 import mezz.jei.common.util.ImmutableRect2i;
 import mezz.jei.common.util.MathUtil;
@@ -31,8 +31,8 @@ public final class DespoilScrollWidget implements ISlottedRecipeWidget, IJeiInpu
     private final ImmutableRect2i area;
     private final ImmutableRect2i contentsArea;
     private final ImmutableRect2i scrollbarArea;
-    private final DrawableNineSliceTexture scrollbarMarker;
-    private final DrawableNineSliceTexture scrollbarBackground;
+    private final ScalableDrawable scrollbarMarker;
+    private final ScalableDrawable scrollbarBackground;
     private final int contentHeight;
     private final List<DespoilRecipeCategory.SlotPlacement> slotPlacements;
     private double dragOriginY = -1.0D;
@@ -131,7 +131,7 @@ public final class DespoilScrollWidget implements ISlottedRecipeWidget, IJeiInpu
     }
 
     @Override
-    public boolean handleMouseScrolled(double mouseX, double mouseY, double scrollDeltaY) {
+    public boolean handleMouseScrolled(double mouseX, double mouseY, double scrollDeltaX, double scrollDeltaY) {
         // 鼠标位于滚动区时消费滚轮，防止 JEI 直接切换页面。
         if (!area.contains(mouseX, mouseY)) {
             return false;

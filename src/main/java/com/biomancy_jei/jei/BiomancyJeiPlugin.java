@@ -17,10 +17,13 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraftforge.common.ForgeSpawnEggItem;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.world.item.EnchantedBookItem;
+import net.minecraft.world.item.enchantment.EnchantmentInstance;
+import net.minecraft.client.Minecraft;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.core.registries.Registries;
+import net.neoforged.fml.ModList;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -95,7 +98,7 @@ public final class BiomancyJeiPlugin implements IModPlugin {
             for (Path path : paths.filter(path -> path.toString().endsWith(".json")).sorted().toList()) {
                 Path relativePath = dataDirectory.relativize(path);
                 if (relativePath.getNameCount() < 5
-                        || !relativePath.getName(1).toString().equals("loot_tables")
+                        || !relativePath.getName(1).toString().equals("loot_table")
                         || !relativePath.getName(2).toString().equals("biomancy")
                         || !relativePath.getName(3).toString().equals("despoil")) {
                     continue;
@@ -103,8 +106,8 @@ public final class BiomancyJeiPlugin implements IModPlugin {
 
                 String entityPath = relativePath.subpath(4, relativePath.getNameCount()).toString().replace('\\', '/');
                 ResourceLocation entityId = ResourceLocation.fromNamespaceAndPath(relativePath.getName(0).toString(), entityPath.substring(0, entityPath.length() - ".json".length()));
-                EntityType<?> entityType = ForgeRegistries.ENTITY_TYPES.getValue(entityId);
-                SpawnEggItem spawnEgg = ForgeSpawnEggItem.fromEntityType(entityType);
+                EntityType<?> entityType = BuiltInRegistries.ENTITY_TYPE.getOptional(entityId).orElse(null);
+                SpawnEggItem spawnEgg = entityType == null ? null : SpawnEggItem.byId(entityType);
                 if (spawnEgg == null) {
                     continue;
                 }
@@ -143,7 +146,7 @@ public final class BiomancyJeiPlugin implements IModPlugin {
 
         List<DespoilRecipe> recipes = new ArrayList<>();
         for (Map.Entry<Item, LinkedHashSet<SpawnEggItem>> entry : targetsByDrop.entrySet()) {
-            ResourceLocation dropId = ForgeRegistries.ITEMS.getKey(entry.getKey());
+            ResourceLocation dropId = BuiltInRegistries.ITEM.getKey(entry.getKey());
             if (dropId == null) {
                 continue;
             }
@@ -166,7 +169,7 @@ public final class BiomancyJeiPlugin implements IModPlugin {
         JsonObject entryObject = entry.getAsJsonObject();
         JsonElement itemName = entryObject.get("name");
         if (itemName != null && itemName.isJsonPrimitive() && "minecraft:item".equals(entryObject.get("type").getAsString())) {
-            Item item = ForgeRegistries.ITEMS.getValue(ResourceLocation.parse(itemName.getAsString()));
+            Item item = BuiltInRegistries.ITEM.getOptional(ResourceLocation.parse(itemName.getAsString())).orElse(null);
             if (item != null) {
                 drops.add(item);
             }
@@ -182,23 +185,23 @@ public final class BiomancyJeiPlugin implements IModPlugin {
 
     // 统一取得作为 JEI 催化剂和输入的血肉镰刀。
     public static ItemStack getSickleStack() {
-        return ForgeRegistries.ITEMS.getValue(SICKLE_ID).getDefaultInstance();
+        return BuiltInRegistries.ITEM.get(SICKLE_ID).getDefaultInstance();
     }
 
     // 创建带有 Biomancy 剥取附魔的附魔书，用于表达镰刀之外的获取方式。
     public static ItemStack getDespoilBook() {
-        Enchantment enchantment = ForgeRegistries.ENCHANTMENTS.getValue(DESPOIL_ENCHANTMENT_ID);
-        if (enchantment == null) {
-            return Items.ENCHANTED_BOOK.getDefaultInstance();
+        var level = Minecraft.getInstance().level;
+        if (level == null) {
+            throw new IllegalStateException("Despoil enchantment requires client registry access");
         }
-        ItemStack book = Items.ENCHANTED_BOOK.getDefaultInstance();
-        EnchantmentHelper.setEnchantments(Map.of(enchantment, 1), book);
-        return book;
+        var enchantment = level.registryAccess().registryOrThrow(Registries.ENCHANTMENT)
+                .getHolderOrThrow(ResourceKey.create(Registries.ENCHANTMENT, DESPOIL_ENCHANTMENT_ID));
+        return EnchantedBookItem.createForEnchantment(new EnchantmentInstance(enchantment, 1));
     }
 
     // 统一取得用于 JEI 和 EMI 页面入口的原初摇篮方块物品。
     public static ItemStack getCradleStack() {
-        Item item = ForgeRegistries.ITEMS.getValue(ResourceLocation.fromNamespaceAndPath("biomancy", "primordial_cradle"));
+        Item item = BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath("biomancy", "primordial_cradle"));
         return item == null ? ItemStack.EMPTY : item.getDefaultInstance();
     }
 

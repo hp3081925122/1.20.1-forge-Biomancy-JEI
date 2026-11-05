@@ -19,7 +19,7 @@ public abstract class RecipeScreenMixin {
     @Shadow
     private List<WidgetGroup> currentPage;
 
-    @Inject(method = {"mouseClicked", "m_6375_"}, at = @At("HEAD"), cancellable = true)
+    @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
     private void biomancyJei$clickRecipeWidgets(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
         // 将屏幕坐标转换为 WidgetGroup 本地坐标并转发点击。
         if (currentPage == null) {
@@ -44,8 +44,8 @@ public abstract class RecipeScreenMixin {
         }
     }
 
-    @Inject(method = {"mouseScrolled", "m_6050_"}, at = @At("HEAD"), cancellable = true)
-    private void biomancyJei$scrollRecipeWidgets(double mouseX, double mouseY, double amount, CallbackInfoReturnable<Boolean> cir) {
+    @Inject(method = "mouseScrolled", at = @At("HEAD"), cancellable = true)
+    private void biomancyJei$scrollRecipeWidgets(double mouseX, double mouseY, double horizontalAmount, double amount, CallbackInfoReturnable<Boolean> cir) {
         // 仅让鼠标所在的 Biomancy JEI 滚动控件消费滚轮事件。
         if (currentPage == null) {
             return;
@@ -68,7 +68,7 @@ public abstract class RecipeScreenMixin {
         }
     }
 
-    @Inject(method = {"mouseDragged", "m_7979_"}, at = @At("HEAD"), cancellable = true)
+    @Inject(method = "mouseDragged", at = @At("HEAD"), cancellable = true)
     private void biomancyJei$dragRecipeWidgets(double mouseX, double mouseY, int button, double dragX, double dragY, CallbackInfoReturnable<Boolean> cir) {
         // 拖拽时不限制鼠标必须位于控件范围，确保滑块可连续拖动。
         if (currentPage == null) {
@@ -89,7 +89,7 @@ public abstract class RecipeScreenMixin {
         }
     }
 
-    @Inject(method = {"mouseReleased", "m_6348_"}, at = @At("HEAD"), cancellable = true)
+    @Inject(method = "mouseReleased", at = @At("HEAD"), cancellable = true)
     private void biomancyJei$releaseRecipeWidgets(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
         // 左键释放时清理所有正在拖拽的 Biomancy JEI 滑块状态。
         if (currentPage == null) {

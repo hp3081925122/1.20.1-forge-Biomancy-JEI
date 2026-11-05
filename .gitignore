@@ -19,3 +19,8 @@ hs_err_pid*
 
 # Common working directory
 run
+
+迁移文档.md
+bin/
+*.log
+runs/

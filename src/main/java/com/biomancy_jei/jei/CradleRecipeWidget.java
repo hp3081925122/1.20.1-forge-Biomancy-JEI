@@ -9,7 +9,7 @@ import mezz.jei.api.gui.inputs.IJeiUserInput;
 import mezz.jei.api.gui.inputs.RecipeSlotUnderMouse;
 import mezz.jei.api.gui.widgets.ISlottedRecipeWidget;
 import mezz.jei.common.Internal;
-import mezz.jei.common.gui.elements.DrawableNineSliceTexture;
+import mezz.jei.common.gui.elements.ScalableDrawable;
 import mezz.jei.common.gui.textures.Textures;
 import mezz.jei.common.util.ImmutableRect2i;
 import mezz.jei.common.util.MathUtil;
@@ -36,8 +36,8 @@ public final class CradleRecipeWidget implements ISlottedRecipeWidget, IJeiInput
     private final ImmutableRect2i area;
     private final ImmutableRect2i tributeContentsArea;
     private final ImmutableRect2i scrollbarArea;
-    private final DrawableNineSliceTexture scrollbarMarker;
-    private final DrawableNineSliceTexture scrollbarBackground;
+    private final ScalableDrawable scrollbarMarker;
+    private final ScalableDrawable scrollbarBackground;
     private final int contentHeight;
     private final List<CradleRecipeCategory.SlotPlacement> mobPlacements;
     private final List<CradleRecipeCategory.SlotPlacement> tributePlacements;
@@ -175,7 +175,7 @@ public final class CradleRecipeWidget implements ISlottedRecipeWidget, IJeiInput
     }
 
     @Override
-    public boolean handleMouseScrolled(double mouseX, double mouseY, double scrollDeltaY) {
+    public boolean handleMouseScrolled(double mouseX, double mouseY, double scrollDeltaX, double scrollDeltaY) {
         // 鼠标位于投喂物品视口时消费滚轮，避免 JEI 切换到下一页。
         if (!tributeContentsArea.contains(mouseX, mouseY)) {
             return false;

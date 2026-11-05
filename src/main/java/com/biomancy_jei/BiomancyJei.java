@@ -1,6 +1,6 @@
 package com.biomancy_jei;
 
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.fml.common.Mod;
 
 @Mod(BiomancyJei.MOD_ID)
 public final class BiomancyJei {

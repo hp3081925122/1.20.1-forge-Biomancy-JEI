@@ -12,9 +12,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.alchemy.Potion;
-import net.minecraft.world.item.alchemy.PotionUtils;
-import net.minecraftforge.common.ForgeSpawnEggItem;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.core.Holder;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -39,41 +40,41 @@ public record CradleRecipe(ResourceLocation id, ItemStack cradle, List<CradleMob
 
     // 从当前 Biomancy 版本的 Tribute API 构建原初摇篮页面数据。
     public static CradleRecipe create() {
-        Item cradleItem = ForgeRegistries.ITEMS.getValue(CRADLE_ID);
+        Item cradleItem = BuiltInRegistries.ITEM.get(CRADLE_ID);
         List<CradleMob> mobs = new ArrayList<>();
         for (CradleMobDefinition definition : MOB_DEFINITIONS) {
             ResourceLocation entityId = ResourceLocation.fromNamespaceAndPath("biomancy", definition.entityPath());
-            EntityType<?> entityType = ForgeRegistries.ENTITY_TYPES.getValue(entityId);
+            EntityType<?> entityType = BuiltInRegistries.ENTITY_TYPE.getOptional(entityId).orElse(null);
             if (entityType == null) {
                 continue;
             }
-            SpawnEggItem spawnEgg = ForgeSpawnEggItem.fromEntityType(entityType);
+            SpawnEggItem spawnEgg = SpawnEggItem.byId(entityType);
             if (spawnEgg != null) {
                 mobs.add(new CradleMob(spawnEgg.getDefaultInstance(), definition.condition()));
             }
         }
 
         List<CradleTribute> tributes = new ArrayList<>();
-        for (Item item : ForgeRegistries.ITEMS.getValues()) {
+        for (Item item : BuiltInRegistries.ITEM) {
             addTribute(tributes, item.getDefaultInstance());
         }
-        for (Potion potion : ForgeRegistries.POTIONS.getValues()) {
+        for (Holder<Potion> potion : BuiltInRegistries.POTION.holders().toList()) {
             // 为三种药水容器分别保留效果 NBT，展示其真实的摇篮数值。
-            addTribute(tributes, PotionUtils.setPotion(new ItemStack(Items.POTION), potion));
-            addTribute(tributes, PotionUtils.setPotion(new ItemStack(Items.SPLASH_POTION), potion));
-            addTribute(tributes, PotionUtils.setPotion(new ItemStack(Items.LINGERING_POTION), potion));
+            addTribute(tributes, PotionContents.createItemStack(Items.POTION, potion));
+            addTribute(tributes, PotionContents.createItemStack(Items.SPLASH_POTION, potion));
+            addTribute(tributes, PotionContents.createItemStack(Items.LINGERING_POTION, potion));
         }
-        for (Item item : ForgeRegistries.ITEMS.getValues()) {
+        for (Item item : BuiltInRegistries.ITEM) {
             if (item instanceof PotionSerumItem serum) {
                 // 药水血清只展示 Biomancy 配方实际可制作的药水变体。
-                for (Potion potion : PotionSerumRecipes.POTIONS) {
+                for (Holder<Potion> potion : PotionSerumRecipes.getPotions(Minecraft.getInstance().level)) {
                     addTribute(tributes, serum.getInstanceFrom(potion));
                 }
             }
         }
         tributes.sort(Comparator
-                .comparing((CradleTribute entry) -> ForgeRegistries.ITEMS.getKey(entry.item().getItem()).toString())
-                .thenComparing(entry -> entry.item().getTag() == null ? "" : entry.item().getTag().toString()));
+                .comparing((CradleTribute entry) -> BuiltInRegistries.ITEM.getKey(entry.item().getItem()).toString())
+                .thenComparing(entry -> entry.item().getComponentsPatch().toString()));
 
         ResourceLocation recipeId = ResourceLocation.fromNamespaceAndPath(BiomancyJei.MOD_ID, "primordial_cradle");
         return new CradleRecipe(recipeId, cradleItem == null ? ItemStack.EMPTY : cradleItem.getDefaultInstance(), mobs, tributes);
