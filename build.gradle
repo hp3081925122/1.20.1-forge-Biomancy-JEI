@@ -72,7 +72,7 @@ dependencies {
     compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
     compileOnly "net.mezzdev.config:mezz_config-26.1.2-config-api:0.6.10"
     runtimeOnly "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
-    implementation "curse.maven:biomancy-reforged-1782601:9436020"
+    implementation "curse.maven:biomancy-reforged-1782601:9454434"
     implementation "curse.maven:emi-unofficial-port-unstable-1544558:8630349"
     implementation "maven.modrinth:8BmcQJ2H:xfVfPcoC"
     implementation "curse.maven:just-enough-characters-250702:8413185"
