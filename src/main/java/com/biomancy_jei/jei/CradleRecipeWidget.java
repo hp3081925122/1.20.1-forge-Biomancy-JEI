@@ -107,11 +107,6 @@ public final class CradleRecipeWidget implements ISlottedRecipeWidget, IJeiInput
             IRecipeSlotDrawable slot = mobSlots.get(index);
             if (slot.isMouseOver(mouseX, mouseY)) {
                 slot.getTooltip(tooltip);
-                if (index < mobs.size()) {
-                    tooltip.add(Component.translatable("jei.biomancy_jei.cradle.condition.title").withStyle(ChatFormatting.GRAY));
-                    tooltip.add(Component.translatable("jei.biomancy_jei.cradle.condition.header").withStyle(ChatFormatting.GRAY));
-                    tooltip.add(Component.translatable(mobs.get(index).condition().translationKey()).withStyle(ChatFormatting.GRAY));
-                }
                 return;
             }
         }
@@ -123,9 +118,6 @@ public final class CradleRecipeWidget implements ISlottedRecipeWidget, IJeiInput
             IRecipeSlotDrawable slot = tributeSlots.get(index);
             if (slot.isMouseOver(mouseX, adjustedMouseY)) {
                 slot.getTooltip(tooltip);
-                if (index < tributes.size()) {
-                    addTributeTooltip(tooltip, tributes.get(index));
-                }
                 return;
             }
         }
@@ -211,7 +203,13 @@ public final class CradleRecipeWidget implements ISlottedRecipeWidget, IJeiInput
     }
 
     // 将投喂物品的六项数值追加到 JEI 原生物品提示中。
-    private static void addTributeTooltip(ITooltipBuilder tooltip, CradleRecipe.CradleTribute tribute) {
+    static void addMobTooltip(ITooltipBuilder tooltip, CradleRecipe.CradleMob mob) {
+        tooltip.add(Component.translatable("jei.biomancy_jei.cradle.condition.title").withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.translatable("jei.biomancy_jei.cradle.condition.header").withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.translatable(mob.condition().translationKey()).withStyle(ChatFormatting.GRAY));
+    }
+
+    static void addTributeTooltip(ITooltipBuilder tooltip, CradleRecipe.CradleTribute tribute) {
         tooltip.add(Component.translatable("jei.biomancy_jei.cradle.tribute.modifiers").withStyle(ChatFormatting.GRAY));
         if (tribute.biomass() != 0) tooltip.add(Component.translatable("jei.biomancy_jei.cradle.tribute.biomass", signed(tribute.biomass())).withStyle(ChatFormatting.GRAY));
         if (tribute.lifeEnergy() != 0) tooltip.add(Component.translatable("jei.biomancy_jei.cradle.tribute.life_energy", signed(tribute.lifeEnergy())).withStyle(ChatFormatting.GRAY));

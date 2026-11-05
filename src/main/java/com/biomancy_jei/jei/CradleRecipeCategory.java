@@ -24,6 +24,7 @@ import java.util.List;
 
 // 定义原初摇篮页面的固定布局和滚动区域。
 public final class CradleRecipeCategory implements IRecipeCategory<CradleRecipe> {
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(CradleRecipeCategory.class);
     public static final RecipeType<CradleRecipe> RECIPE_TYPE = RecipeType.create(BiomancyJei.MOD_ID, "primordial_cradle", CradleRecipe.class);
     public static final int WIDTH = 164;
     public static final int ACTIVATION_Y = 20;
@@ -86,12 +87,15 @@ public final class CradleRecipeCategory implements IRecipeCategory<CradleRecipe>
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, CradleRecipe recipe, IFocusGroup focuses) {
         // 固定展示原初摇篮，并为生物和投喂物品创建由滚动控件定位的槽位。
+        LOGGER.debug("Registering cradle slot tooltips: mobs={}, tributes={}", recipe.mobs().size(), recipe.tributes().size());
         builder.addInputSlot(74, 2).setStandardSlotBackground().addItemStack(cradle);
         for (CradleRecipe.CradleMob mob : recipe.mobs()) {
-            builder.addSlot(RecipeIngredientRole.OUTPUT, 0, 0).setStandardSlotBackground().addItemStack(mob.egg());
+            builder.addSlot(RecipeIngredientRole.OUTPUT, 0, 0).setStandardSlotBackground().addItemStack(mob.egg())
+                    .addRichTooltipCallback((slot, tooltip) -> CradleRecipeWidget.addMobTooltip(tooltip, mob));
         }
         for (CradleRecipe.CradleTribute tribute : recipe.tributes()) {
-            builder.addSlot(RecipeIngredientRole.INPUT, 0, 0).setStandardSlotBackground().addItemStack(tribute.item());
+            builder.addSlot(RecipeIngredientRole.INPUT, 0, 0).setStandardSlotBackground().addItemStack(tribute.item())
+                    .addRichTooltipCallback((slot, tooltip) -> CradleRecipeWidget.addTributeTooltip(tooltip, tribute));
         }
 
         // 将所有可查询的生物刷怪蛋和投喂物品加入 JEI 搜索入口。
